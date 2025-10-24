@@ -23,8 +23,8 @@ if __name__ == '__main__':
     os.environ['CUDA_VISIBLE_DEVICES'] = str(gpu)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    with open(param_path, 'wb') as f: 
-        pickle.dump(vars(args), f, protocol=pickle.HIGHEST_PROTOCOL)
+    # with open(param_path, 'wb') as f:
+    #     pickle.dump(vars(args), f, protocol=pickle.HIGHEST_PROTOCOL)
 
     logger.log('Loading dataset...')
 

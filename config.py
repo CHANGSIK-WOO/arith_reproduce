@@ -6,13 +6,15 @@ import torch
 
 def get_args():
     parser = argparse.ArgumentParser()
-    
+
+    """PACS"""
     parser.add_argument('--dataset', default='PACS')
     parser.add_argument('--source-domain', nargs='+', default=['photo', 'cartoon', 'art_painting'])
     parser.add_argument('--target-domain', nargs='+', default=['sketch'])
     parser.add_argument('--known-classes', nargs='+', default=['dog', 'elephant', 'giraffe', 'horse', 'guitar', 'house', 'person'])
     parser.add_argument('--unknown-classes', nargs='+', default=[])
-    
+
+    """OfficeH"""
     # parser.add_argument('--dataset', default='OfficeHome')
     # parser.add_argument('--source-domain', nargs='+', default=['Art', 'Clipart', 'Product'])
     # parser.add_argument('--target-domain', nargs='+', default=['RealWorld'])
@@ -40,18 +42,21 @@ def get_args():
     # parser.add_argument('--known-classes', nargs='+', default=['0', '1', '2', '3', '4', '5'])
     # parser.add_argument('--unknown-classes', nargs='+', default=['6', '7', '8', '9'])
 
+    """VLCS"""
     # parser.add_argument('--dataset', default='VLCS')
     # parser.add_argument('--source-domain', nargs='+', default=['CALTECH', 'PASCAL', 'SUN'])
     # parser.add_argument('--target-domain', nargs='+', default=['LABELME',])
     # parser.add_argument('--known-classes', nargs='+', default=['0', '1', '2', '3', '4'])
     # parser.add_argument('--unknown-classes', nargs='+', default=[])
 
+    """TerraIncognita"""
     # parser.add_argument('--dataset', default='TerraIncognita')
     # parser.add_argument('--source-domain', nargs='+', default=['location_38', 'location_43', 'location_46'])
     # parser.add_argument('--target-domain', nargs='+', default=['location_100'])
     # parser.add_argument('--known-classes', nargs='+', default=['bobcat', 'coyote', 'dog', 'opossum', 'rabbit', 'raccoon', 'squirrel', 'bird', 'cat', 'empty',])
     # parser.add_argument('--unknown-classes', nargs='+', default=[])
 
+    """DomainNet"""
     # parser.add_argument('--dataset', default='DomainNet')
     # parser.add_argument('--source-domain', nargs='+', default=['clipart', 'infograph', 'painting', 'quickdraw', 'real'])
     # parser.add_argument('--target-domain', nargs='+', default=['sketch'])
@@ -116,7 +121,7 @@ def get_args():
     parser.add_argument('--without-bcls', action='store_true')
     parser.add_argument('--share-param', action='store_true')
 
-    parser.add_argument('--save-dir', default='/data/wxr/MEDIC-plus/save')
+    parser.add_argument('--save-dir', default='/data/changsik/arith/save')
     parser.add_argument('--save-name', default='demo')
     parser.add_argument('--save-best-test', action='store_true')
     parser.add_argument('--save-later', action='store_true')
@@ -165,15 +170,15 @@ num_epoch_before = args.num_epoch_before
 crossval = True
 
 if dataset == 'PACS':
-    train_dir = '/data/datasets/PACS'
-    val_dir = '/data/datasets/PACS'
-    test_dir = '/data/datasets/PACS'
+    train_dir = '/data/datasets/domainbed/PACS'
+    val_dir = '/data/datasets/domainbed/PACS'
+    test_dir = '/data/datasets/domainbed/PACS'
     sub_batch_size = batch_size // 2    
     small_img = False
 elif dataset == 'OfficeHome':
-    train_dir = ''
-    val_dir = ''
-    test_dir = ''
+    train_dir = '/data/datasets/domainbed/OfficeH'
+    val_dir = '/data/datasets/domainbed/OfficeH'
+    test_dir = '/data/datasets/domainbed/OfficeH'
     sub_batch_size = batch_size // 2
     small_img = False
 elif dataset == "DigitsDG":
@@ -183,21 +188,21 @@ elif dataset == "DigitsDG":
     sub_batch_size = batch_size // 2
     small_img = True
 elif dataset == 'VLCS':
-    train_dir = ''
-    val_dir = ''
-    test_dir = ''
+    train_dir = '/data/datasets/domainbed/VLCS'
+    val_dir = '/data/datasets/domainbed/VLCS'
+    test_dir = '/data/datasets/domainbed/VLCS'
     sub_batch_size = batch_size 
     small_img = False
 elif dataset == 'TerraIncognita':
-    train_dir = ''
-    val_dir = ''
-    test_dir = ''
+    train_dir = '/data/datasets/domainbed/TerraInc'
+    val_dir = '/data/datasets/domainbed/TerraInc'
+    test_dir = '/data/datasets/domainbed/TerraInc'
     sub_batch_size = batch_size
     small_img = False
 elif dataset == "DomainNet":
-    train_dir = ''
-    val_dir = ''
-    test_dir = ''
+    train_dir = '/data/datasets/domainbed/DomainNet'
+    val_dir = '/data/datasets/domainbed/DomainNet'
+    test_dir = '/data/datasets/domainbed/DomainNet'
     sub_batch_size = batch_size // 2
     small_img = False
 
