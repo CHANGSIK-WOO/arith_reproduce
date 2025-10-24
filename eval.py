@@ -47,22 +47,22 @@ if __name__ == '__main__':
     if dataset is None:
         dataset = param['dataset']
     if dataset == 'PACS':
-        root_dir = ''
+        root_dir = '/data/datasets/domainbed/PACS'
         small_img = False
     elif dataset == 'OfficeHome':
-        root_dir = ''
+        root_dir = '/data/datasets/domainbed/OfficeH'
         small_img = False
     elif dataset == "DigitsDG":
-        root_dir = ''
+        root_dir = ''  # 경로 확인 필요
         small_img = True
     elif dataset == 'VLCS':
-        root_dir = ''
+        root_dir = '/data/datasets/domainbed/VLCS'
         small_img = False
     elif dataset == 'TerraIncognita':
-        root_dir = ''
+        root_dir = '/data/datasets/domainbed/TerraInc'
         small_img = False
     elif dataset == "DomainNet":
-        root_dir = ''
+        root_dir = '/data/datasets/domainbed/DomainNet'
         small_img = False
 
     source_domain = sorted(param['source_domain'])

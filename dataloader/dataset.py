@@ -2,6 +2,10 @@ import os
 import os.path
 from torch.utils.data import Dataset
 from torchvision.datasets.folder import make_dataset, default_loader
+from PIL import ImageFile  # 이 줄 추가!
+
+# 손상된 이미지 로드 허용 (이 줄 추가!)
+ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 
 IMG_EXTENSIONS = ('.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.tif', '.tiff', '.webp')

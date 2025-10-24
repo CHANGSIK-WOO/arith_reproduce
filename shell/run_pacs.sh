@@ -18,13 +18,14 @@ conda activate arith
 # 설정
 # ============================================
 GPU_NUM=0
+export CUDA_VISIBLE_DEVICES=${GPU_NUM}
 SEEDS=(42)
 
 SAVE_DIR="/data/changsik/arith/save"
 DATASET="PACS"
 BATCH_SIZE=16
-NUM_EPOCH=6000
-EVAL_STEP=300
+NUM_EPOCH=300
+EVAL_STEP=6000
 LR=2e-4
 META_LR=1e-2
 
