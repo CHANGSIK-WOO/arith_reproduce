@@ -1,4 +1,3 @@
-# main.py
 from config import *
 import torch
 import pickle
@@ -9,7 +8,6 @@ from optimizer.optimizer import get_optimizer, get_scheduler
 from loss.OVALoss import OVALoss
 from train.test import *
 from util.log import Logger
-from util.seed import set_random_seed
 from train.select import *
 from util.iterator import *
 from train.ml import *
@@ -18,9 +16,6 @@ import types
 
 
 if __name__ == '__main__':
-
-    # Random seed 설정 (가장 먼저 실행)
-    set_random_seed(seed)
 
     logger = Logger(log_path)
 
@@ -52,7 +47,6 @@ if __name__ == '__main__':
 
 
     logger.log_params(
-        Seed=seed,  # seed 로깅 추가
         GPU=gpu,
         SaveName=save_name,
         SaveBestTest=save_best_test,
@@ -75,7 +69,10 @@ if __name__ == '__main__':
         EvalStep=eval_step,
         OptimizeMethod=optimize_method,
         LearningRate=lr,
-        MetaLearningRate=meta_lr
+        MetaLearningRate=meta_lr,
+        WithoutCloseSetClassifier=without_cls,
+        WithoutBinaryClassifier=without_bcls,
+        ShareParameter=share_param
     )
 
     domain_specific_loader, val_k = get_domain_specific_dataloader(

@@ -1,4 +1,3 @@
-# eval.py
 import argparse
 import torch
 import pickle
@@ -7,25 +6,22 @@ import sys
 from dataloader.dataloader import get_dataloader
 from model.model import MutiClassifier, MutiClassifier_, resnet18_fast, resnet50_fast, ConvNet, gfnet_fast
 from util.log import log
-from util.seed import set_random_seed
 from torch.nn import functional as F
 from util.ROC import generate_OSCR
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--gpu', default='0')
     parser.add_argument('--dataset', default=None)
-    parser.add_argument('--seed', type=int, default=42, help='random seed for reproducibility')
+
     parser.add_argument('--batch-size', type=int, default=128)
     parser.add_argument('--hits', type=int, default=30)
 
     parser.add_argument('--save-dir', default='')
     parser.add_argument('--save-name', default='demo')
-
+    
     args = parser.parse_args()
-
-    # Random seed 설정
-    set_random_seed(args.seed)
 
     # It can be used to replace the following code, but the editor may take it as an error.
     # locals().update(vars(args))
@@ -40,12 +36,12 @@ if __name__ == '__main__':
     save_name = args.save_name
 
     param_path = os.path.join(save_dir, 'param', save_name + '.pkl')
-
-    with open(param_path, 'rb') as f:
+    
+    with open(param_path, 'rb') as f: 
         param = pickle.load(f)
-
+        
     if dataset is None:
-        dataset = param['dataset']
+        dataset = param['dataset']    
     if dataset == 'PACS':
         root_dir = ''
         small_img = False
@@ -69,12 +65,13 @@ if __name__ == '__main__':
     target_domain = sorted(param['target_domain'])
     known_classes = sorted(param['known_classes'])
     unknown_classes = sorted(param['unknown_classes'])
-
+     
     net_name = param['net_name']
     if "share_param" in param:
         share_param = param['share_param']
     else:
         share_param = False
+
 
     os.environ['CUDA_VISIBLE_DEVICES'] = str(gpu)
 
@@ -83,7 +80,6 @@ if __name__ == '__main__':
     model_path = os.path.join('./', save_dir, 'model', 'val', save_name + '.tar')
 
     log('Save name: {}'.format(save_name), log_path)
-    log('Seed: {}'.format(args.seed), log_path)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
