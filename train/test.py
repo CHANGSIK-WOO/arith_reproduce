@@ -15,7 +15,8 @@ def calculate_acc(output, label):
 def calculate_loss(output, label):
     criterion = nn.CrossEntropyLoss()
     loss = criterion(output, label)
-    return loss.item() / len(output)
+    #return loss.item() / len(output)
+    return loss.item()
 
 
 def generate_logits(net, loader, device="cpu"):

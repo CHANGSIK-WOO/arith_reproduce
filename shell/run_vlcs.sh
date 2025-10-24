@@ -28,8 +28,8 @@ EVAL_STEP=300
 LR=2e-4
 META_LR=1e-2
 
-KNOWN_CLASSES="0 1 2 3 4"
-VLCS_DOMAINS=("CALTECH" "PASCAL" "SUN" "LABELME")
+KNOWN_CLASSES="bird  car  chair  dog  person"
+VLCS_DOMAINS=("Caltech101" "VOC2007" "SUN09" "LABELME")
 
 # ============================================
 # VLCS 학습
