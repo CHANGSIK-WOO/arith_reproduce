@@ -167,4 +167,9 @@ renovate_step = int(num_epoch * 0.85) if save_later else 0
 
 assert task_d * task_c == sum(task_per_step)
 
+os.makedirs(os.path.dirname(log_path), exist_ok=True)
+os.makedirs(os.path.dirname(param_path), exist_ok=True)
+os.makedirs(os.path.dirname(model_val_path), exist_ok=True)
+os.makedirs(os.path.dirname(model_test_path), exist_ok=True)
+
 

@@ -5,7 +5,7 @@
 #SBATCH -p batch
 #SBATCH -w vgi1
 #SBATCH --cpus-per-gpu=8
-#SBATCH --mem=10G
+#SBATCH --mem=15G
 #SBATCH --time=7-0
 #SBATCH -o ./logs/%N_%x_%j.out
 #SBATCH -e ./logs/%N_%x_%j.err
@@ -23,8 +23,8 @@ SEEDS=(42)
 SAVE_DIR="/data/changsik/arith/save"
 DATASET="DomainNet"
 BATCH_SIZE=16
-NUM_EPOCH=15000  # DomainNet은 더 많은 epoch 필요
-EVAL_STEP=300
+NUM_EPOCH=6000  # DomainNet은 더 많은 epoch 필요
+EVAL_STEP=3000
 LR=2e-4
 META_LR=1e-2
 

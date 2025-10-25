@@ -5,7 +5,7 @@
 #SBATCH -p batch
 #SBATCH -w vgi1
 #SBATCH --cpus-per-gpu=8
-#SBATCH --mem=10G
+#SBATCH --mem=15G
 #SBATCH --time=2-0
 #SBATCH -o ./logs/%N_%x_%j.out
 #SBATCH -e ./logs/%N_%x_%j.err

@@ -44,7 +44,7 @@ def get_transform(instr, small_img=False, color_jitter=True, random_grayscale=Tr
 def get_dataloader(
     root_dir, domain, classes, batch_size,
     domain_class_dict=None, get_domain_label=True, get_class_label=True,
-    instr="train", small_img=False, shuffle=True, drop_last=True,
+    instr="train", small_img=False, shuffle=True, drop_last=False,
     num_workers=4, split_rate=0.8, crossval=False
 ):
     domain = domain if isinstance(domain, list) else [domain]
@@ -124,7 +124,7 @@ def get_domain_specific_dataloader(
 
             dataloader_list.append(DataLoader(
                 dataset=dataset, batch_size=batch_size,
-                shuffle=True, drop_last=True, num_workers=1
+                shuffle=True, drop_last=False, num_workers=1
             ))
 
         domain_specific_loader.append(

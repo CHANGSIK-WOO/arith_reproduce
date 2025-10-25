@@ -5,7 +5,7 @@
 #SBATCH -p batch
 #SBATCH -w vgi1
 #SBATCH --cpus-per-gpu=8
-#SBATCH --mem=10G
+#SBATCH --mem=15G
 #SBATCH --time=2-0
 #SBATCH -o ./logs/%N_%x_%j.out
 #SBATCH -e ./logs/%N_%x_%j.err
@@ -22,7 +22,7 @@ SEEDS=(42)
 
 SAVE_DIR="/data/changsik/arith/save"
 DATASET="TerraIncognita"
-BATCH_SIZE=16
+BATCH_SIZE=12
 NUM_EPOCH=6000
 EVAL_STEP=300
 LR=2e-4
