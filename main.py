@@ -73,7 +73,8 @@ if __name__ == '__main__':
         EvalStep=eval_step,
         OptimizeMethod=optimize_method,
         LearningRate=lr,
-        MetaLearningRate=meta_lr
+        MetaLearningRate=meta_lr,
+        Arithantithetic=arith_antithetic,
     )
 
     domain_specific_loader, val_k = get_domain_specific_dataloader(
@@ -208,71 +209,118 @@ if __name__ == '__main__':
         input_sum = []
         label_sum = []
 
-        for domain_index, group_index in task_pool:
+        # ---- [안티테틱 교대] 에폭 짝/홀에 따라 순서/스케줄 반전 ----
+        warmup = int(0.2 * num_epoch)  # 전체 에폭의 10% 동안은 FWD만 사용 (필요시 0.05~0.2로 조정)
 
+        if (algorithm == 'arith') and arith_antithetic:
+            # ✅ 워ーム업 이후(>= warmup)부터 홀수 epoch에서만 역순 사용
+            use_reverse = (epoch >= warmup) and (epoch % 2 == 1)
+        else:
+            use_reverse = False
+
+        # ✅ 스케줄/가중은 고정(커리큘럼·산술가중의 일관성 유지)
+        _task_sched   = task_per_step
+        _weight_sched = weight_per_step
+
+        # 순회 순서만 π/π_rev로 토글
+        _task_iterable = reversed(task_pool) if use_reverse else task_pool
+
+        # (선택) 로그로 교대 확인
+        logger.log(
+            f"[Epoch {epoch}] Antithetic order: {'REV' if use_reverse else 'FWD'}  "
+            f"sched={_task_sched}, w={_weight_sched}"
+        )
+
+        # ---- Inner 수집/업데이트 루프 ----
+        for domain_index, group_index in _task_iterable:
+
+            # 도메인 묶음(domain_index)에 속한 각 도메인에서 균등 샘플
             for i in domain_index:
                 domain_specific_loader[i].keep(group_index)
-                input, label = domain_specific_loader[i].next(batch_size=batch_size//len(domain_index))
+                input, label = domain_specific_loader[i].next(
+                    batch_size = batch_size // len(domain_index)
+                )
                 domain_specific_loader[i].reset()
 
-                input = input.to(device)
-                label = label.to(device)
-                input_sum.append(input)
-                label_sum.append(label)
+                input_sum.append(input.to(device))
+                label_sum.append(label.to(device))
 
-            task_count = (task_count + 1) % task_per_step[step_index]
+            # 스텝 묶음 진행도 갱신
+            task_count = (task_count + 1) % _task_sched[step_index]
+
+            # 스텝 경계: concat → inner SGD → meta-grad 누적
             if task_count == 0:
+                input_cat = torch.cat(input_sum, dim=0)
+                label_cat = torch.cat(label_sum, dim=0)
 
-                input_sum = torch.cat(input_sum, dim=0)
-                label_sum = torch.cat(label_sum, dim=0)
+                grad = compute_gradient(
+                    net=net,
+                    fast_parameters=fast_parameters,
+                    input=input_cat,
+                    label=label_cat,
+                    criterion=criterion,
+                    ovaloss=ovaloss,
+                    weight=_task_sched[step_index]  # (샘플 수/스텝 크기 보정 등 기존 의미 유지)
+                )
 
-                grad = compute_gradient(net=net, fast_parameters=fast_parameters, input=input_sum, label=label_sum, criterion=criterion, ovaloss=ovaloss, weight=task_per_step[step_index])
-                fast_parameters = update_fast_weights("reptile", net=net, grad=grad, meta_lr=meta_lr)
+                # inner: 모멘텀 없는 SGD 1 step (Arith 권장)
+                fast_parameters = update_fast_weights(
+                    "reptile", net=net, grad=grad, meta_lr=meta_lr
+                )
 
+                # outer에 쌓을 meta-grad (Arith면 산술 가중)
                 if algorithm == 'medic':
                     pass
-
                 elif algorithm == 'arith':
-                    accumulate_meta_grads("arith", net=net, grad=grad, meta_lr=meta_lr, eta=weight_per_step[step_index])
+                    accumulate_meta_grads(
+                        "arith", net=net, grad=grad, meta_lr=meta_lr,
+                        eta=_weight_sched[step_index]  # 산술 가중 (역순 시 반전된 가중)
+                    )
 
-
+                # 다음 스텝 준비
                 input_sum = []
                 label_sum = []
                 step_index += 1
 
+        # ---- 알고리즘 분기: medic면 reptile 누적 마무리, arith는 위에서 누적완료 ----
         if algorithm == 'medic':
             accumulate_meta_grads("reptile", net=net, meta_lr=meta_lr)
-
         elif algorithm == 'arith':
             pass
 
-
-        # update with original optimizers
+        # ---- Outer 업데이트 (기존 옵티마로) ----
         optimizer.step()
 
-
-
-
+        # fast 파라미터/그래드 초기화
         fast_parameters = list(net.parameters())
         load_fast_weights(net, None)
         net.zero_grad()
 
-        task_pool = get_task_pool(task_d=task_d, task_c=task_c, domain_index_list=domain_index_list, group_index_list=group_index_list, group_length_list=group_length_list, net=net, domain_specific_loader=domain_specific_loader, device=device, mode=selection_mode)
+        # 다음 에폭을 위한 task 순서 재생성 (selection_mode 전략 유지)
+        task_pool = get_task_pool(
+            task_d=task_d, task_c=task_c,
+            domain_index_list=domain_index_list,
+            group_index_list=group_index_list,
+            group_length_list=group_length_list,
+            net=net,
+            domain_specific_loader=domain_specific_loader,
+            device=device,
+            mode=selection_mode
+        )
 
-        if (epoch + 1) >= (num_epoch // 2) and ((epoch + 1) % eval_step == 0):
-
+        # ---- 주기적 평가/스케줄러/리셋 (원래 로직 그대로) ----
+        if (epoch + 1) >= 900 and ((epoch + 1) % eval_step == 0):
             net.eval()
-
-            recall['va'], recall['ta'], recall['oscrc'], recall['oscrb'] = eval_all(net, val_k, test_k, test_u, log_path, epoch, device)
+            recall['va'], recall['ta'], recall['oscrc'], recall['oscrb'] = \
+                eval_all(net, val_k, test_k, test_u, log_path, epoch, device)
             update_recall(net, recall, log_path, model_val_path)
 
-
-        if epoch+1 == renovate_step:
-                logger.log("Reset accuracy history...")
-                recall['bva'] = 0
-                recall['bvta'] = 0
-                recall['bvt'] = []
-                recall['bta'] = 0
-                recall['btt'] = []
+        if epoch + 1 == renovate_step:
+            logger.log("Reset accuracy history...")
+            recall['bva']  = 0
+            recall['bvta'] = 0
+            recall['bvt']  = []
+            recall['bta']  = 0
+            recall['btt']  = []
 
         scheduler.step()

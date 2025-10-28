@@ -8,6 +8,7 @@ from optimizer.optimizer import get_optimizer, get_scheduler
 from loss.OVALoss import OVALoss
 from train.test import *
 from util.log import Logger
+from util.seed import set_random_seed
 from train.select import *
 from util.iterator import *
 from train.ml import *
@@ -16,15 +17,16 @@ import types
 
 
 if __name__ == '__main__':
-
-    logger = Logger(log_path)
-
     torch.set_num_threads(1)
     os.environ['CUDA_VISIBLE_DEVICES'] = str(gpu)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    # with open(param_path, 'wb') as f:
-    #     pickle.dump(vars(args), f, protocol=pickle.HIGHEST_PROTOCOL)
+    # Random seed 설정 (가장 먼저 실행)
+    set_random_seed(seed)
+    logger = Logger(log_path)
+
+    with open(param_path, 'wb') as f:
+        pickle.dump(vars(args), f, protocol=pickle.HIGHEST_PROTOCOL)
 
     logger.log('Loading dataset...')
 
@@ -47,6 +49,7 @@ if __name__ == '__main__':
 
 
     logger.log_params(
+        Seed=seed,  # seed 로깅 추가
         GPU=gpu,
         SaveName=save_name,
         SaveBestTest=save_best_test,
@@ -207,6 +210,10 @@ if __name__ == '__main__':
         input_sum = []
         label_sum = []
 
+        logger.log(
+            f"[Epoch {epoch}]"
+        )
+
         for domain_index, group_index in task_pool:
         
             for i in domain_index:
@@ -258,13 +265,12 @@ if __name__ == '__main__':
 
         task_pool = get_task_pool(task_d=task_d, task_c=task_c, domain_index_list=domain_index_list, group_index_list=group_index_list, group_length_list=group_length_list, net=net, domain_specific_loader=domain_specific_loader, device=device, mode=selection_mode) 
 
-        if (epoch+1) % eval_step == 0:      
-       
+        if (epoch + 1) >= 900 and ((epoch + 1) % eval_step == 0):
+
             net.eval()  
 
             recall['va'], recall['ta'], recall['oscrc'], recall['oscrb'] = eval_all(net, val_k, test_k, test_u, log_path, epoch, device)
             update_recall(net, recall, log_path, model_val_path)
-
             
         if epoch+1 == renovate_step:
                 logger.log("Reset accuracy history...")

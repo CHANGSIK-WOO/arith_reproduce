@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=pacs_full
+#SBATCH --job-name=vlcs_makeidea
 #SBATCH --nodes=1
 #SBATCH --gres=gpu:1
 #SBATCH -p batch
@@ -18,32 +18,32 @@ conda activate arith
 # 설정
 # ============================================
 GPU_NUM=0
-export CUDA_VISIBLE_DEVICES=${GPU_NUM}
 SEEDS=(42)
 
 SAVE_DIR="/data/changsik/arith/save"
-DATASET="PACS"
-BATCH_SIZE=16
-NUM_EPOCH=6000
-EVAL_STEP=300
-LR=2e-4
+DATASET="VLCS"
+BATCH_SIZE=12 # 32
+NUM_EPOCH=2000 # 5000
+EVAL_STEP=500
+LR=5e-5
+#LR=6e-6 # 5e-5
 META_LR=1e-2
 
-KNOWN_CLASSES="dog elephant giraffe horse guitar house person"
-PACS_DOMAINS=("photo" "cartoon" "art_painting" "sketch")
+KNOWN_CLASSES="bird  car  chair  dog  person"
+VLCS_DOMAINS=("Caltech101" "VOC2007" "SUN09" "LABELME")
 
 # ============================================
-# PACS 학습
+# VLCS 학습
 # ============================================
 echo "========================================"
-echo "Starting PACS Training"
+echo "Starting VLCS Training"
 echo "========================================"
 
-for TARGET in "${PACS_DOMAINS[@]}"
+for TARGET in "${VLCS_DOMAINS[@]}"
 do
     # Source domain 생성 (target 제외)
     SOURCE_DOMAINS=()
-    for DOMAIN in "${PACS_DOMAINS[@]}"
+    for DOMAIN in "${VLCS_DOMAINS[@]}"
     do
         if [ "$DOMAIN" != "$TARGET" ]; then
             SOURCE_DOMAINS+=("$DOMAIN")
@@ -53,7 +53,7 @@ do
 
     for SEED in "${SEEDS[@]}"
     do
-        SAVE_NAME="pacs_${TARGET}_seed${SEED}"
+        SAVE_NAME="vlcs_${TARGET}_seed${SEED}_makeidea"
 
         echo ""
         echo "========================================"
@@ -76,26 +76,27 @@ do
             --meta-lr ${META_LR} \
             --save-dir ${SAVE_DIR} \
             --save-name ${SAVE_NAME} \
+            --arith-antithetic \
             --save-later
 
-        echo "✓ Training Completed: ${SAVE_NAME}"
+        echo "✓ Training Completed: ${SAVE_NAME}_makeidea"
         echo ""
     done
 done
 
 # ============================================
-# PACS 평가
+# VLCS 평가
 # ============================================
 echo ""
 echo "========================================"
-echo "Starting PACS Evaluation"
+echo "Starting VLCS Evaluation"
 echo "========================================"
 
-for TARGET in "${PACS_DOMAINS[@]}"
+for TARGET in "${VLCS_DOMAINS[@]}"
 do
     for SEED in "${SEEDS[@]}"
     do
-        SAVE_NAME="pacs_${TARGET}_seed${SEED}"
+        SAVE_NAME="vlcs_${TARGET}_seed${SEED}_makeidea"
 
         echo ""
         echo "========================================"
@@ -112,14 +113,14 @@ do
             --save-name ${SAVE_NAME} \
             --gpu ${GPU_NUM}
 
-        echo "✓ Evaluation Completed: ${SAVE_NAME}"
+        echo "✓ Evaluation Completed: ${SAVE_NAME}_makeidea"
         echo ""
     done
 done
 
 echo ""
 echo "========================================"
-echo "PACS All Experiments Completed!"
+echo "VLCS All Experiments Completed!"
 echo "========================================"
 
 

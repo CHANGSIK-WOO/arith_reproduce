@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=domainnet_full
+#SBATCH --job-name=domainnet_makeidea
 #SBATCH --nodes=1
 #SBATCH --gres=gpu:1
 #SBATCH -p batch
@@ -22,10 +22,11 @@ SEEDS=(42)
 
 SAVE_DIR="/data/changsik/arith/save"
 DATASET="DomainNet"
-BATCH_SIZE=16
-NUM_EPOCH=6000  # DomainNet은 더 많은 epoch 필요
-EVAL_STEP=3000
-LR=2e-4
+BATCH_SIZE=12 # 32
+NUM_EPOCH=2000 # 5000
+EVAL_STEP=500
+LR=5e-5
+#LR=6e-6 # 5e-5
 META_LR=1e-2
 
 # DomainNet 클래스 (전체)
@@ -54,7 +55,7 @@ do
 
     for SEED in "${SEEDS[@]}"
     do
-        SAVE_NAME="domainnet_${TARGET}_seed${SEED}"
+        SAVE_NAME="domainnet_${TARGET}_seed${SEED}_makeidea"
 
         echo ""
         echo "========================================"
@@ -77,9 +78,10 @@ do
             --meta-lr ${META_LR} \
             --save-dir ${SAVE_DIR} \
             --save-name ${SAVE_NAME} \
+            --arith-antithetic \
             --save-later
 
-        echo "✓ Training Completed: ${SAVE_NAME}"
+        echo "✓ Training Completed: ${SAVE_NAME}_makeidea"
         echo ""
     done
 done
@@ -96,7 +98,7 @@ for TARGET in "${DOMAINNET_DOMAINS[@]}"
 do
     for SEED in "${SEEDS[@]}"
     do
-        SAVE_NAME="domainnet_${TARGET}_seed${SEED}"
+        SAVE_NAME="domainnet_${TARGET}_seed${SEED}_makeidea"
 
         echo ""
         echo "========================================"
@@ -113,7 +115,7 @@ do
             --save-name ${SAVE_NAME} \
             --gpu ${GPU_NUM}
 
-        echo "✓ Evaluation Completed: ${SAVE_NAME}"
+        echo "✓ Evaluation Completed: ${SAVE_NAME}_makeidea"
         echo ""
     done
 done

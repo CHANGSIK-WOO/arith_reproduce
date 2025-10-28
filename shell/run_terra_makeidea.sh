@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=vlcs_full
+#SBATCH --job-name=terra_makeidea
 #SBATCH --nodes=1
 #SBATCH --gres=gpu:1
 #SBATCH -p batch
@@ -21,28 +21,29 @@ GPU_NUM=0
 SEEDS=(42)
 
 SAVE_DIR="/data/changsik/arith/save"
-DATASET="VLCS"
-BATCH_SIZE=16
-NUM_EPOCH=6000
-EVAL_STEP=300
-LR=2e-4
+DATASET="TerraIncognita"
+BATCH_SIZE=12 # 32
+NUM_EPOCH=2000 # 5000
+EVAL_STEP=500
+LR=5e-5
+#LR=6e-6 # 5e-5
 META_LR=1e-2
 
-KNOWN_CLASSES="bird  car  chair  dog  person"
-VLCS_DOMAINS=("Caltech101" "VOC2007" "SUN09" "LABELME")
+KNOWN_CLASSES="bobcat coyote dog opossum rabbit raccoon squirrel bird cat empty"
+TERRA_DOMAINS=("location_38" "location_43" "location_46" "location_100")
 
 # ============================================
-# VLCS 학습
+# TerraIncognita 학습
 # ============================================
 echo "========================================"
-echo "Starting VLCS Training"
+echo "Starting TerraIncognita Training"
 echo "========================================"
 
-for TARGET in "${VLCS_DOMAINS[@]}"
+for TARGET in "${TERRA_DOMAINS[@]}"
 do
     # Source domain 생성 (target 제외)
     SOURCE_DOMAINS=()
-    for DOMAIN in "${VLCS_DOMAINS[@]}"
+    for DOMAIN in "${TERRA_DOMAINS[@]}"
     do
         if [ "$DOMAIN" != "$TARGET" ]; then
             SOURCE_DOMAINS+=("$DOMAIN")
@@ -52,7 +53,7 @@ do
 
     for SEED in "${SEEDS[@]}"
     do
-        SAVE_NAME="vlcs_${TARGET}_seed${SEED}"
+        SAVE_NAME="terra_${TARGET}_seed${SEED}_makeidea"
 
         echo ""
         echo "========================================"
@@ -75,26 +76,27 @@ do
             --meta-lr ${META_LR} \
             --save-dir ${SAVE_DIR} \
             --save-name ${SAVE_NAME} \
+            --arith-antithetic \
             --save-later
 
-        echo "✓ Training Completed: ${SAVE_NAME}"
+        echo "✓ Training Completed: ${SAVE_NAME}_makeidea"
         echo ""
     done
 done
 
 # ============================================
-# VLCS 평가
+# TerraIncognita 평가
 # ============================================
 echo ""
 echo "========================================"
-echo "Starting VLCS Evaluation"
+echo "Starting TerraIncognita Evaluation"
 echo "========================================"
 
-for TARGET in "${VLCS_DOMAINS[@]}"
+for TARGET in "${TERRA_DOMAINS[@]}"
 do
     for SEED in "${SEEDS[@]}"
     do
-        SAVE_NAME="vlcs_${TARGET}_seed${SEED}"
+        SAVE_NAME="terra_${TARGET}_seed${SEED}_makeidea"
 
         echo ""
         echo "========================================"
@@ -111,14 +113,14 @@ do
             --save-name ${SAVE_NAME} \
             --gpu ${GPU_NUM}
 
-        echo "✓ Evaluation Completed: ${SAVE_NAME}"
+        echo "✓ Evaluation Completed: ${SAVE_NAME}_makeidea"
         echo ""
     done
 done
 
 echo ""
 echo "========================================"
-echo "VLCS All Experiments Completed!"
+echo "TerraIncognita All Experiments Completed!"
 echo "========================================"
 
 

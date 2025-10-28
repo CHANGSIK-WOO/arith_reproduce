@@ -53,12 +53,13 @@ def get_args():
     parser.add_argument('--seed', type=int, default=42, help='random seed for reproducibility')
     parser.add_argument('--gpu', default='0')
     parser.add_argument('--batch-size', type=int, default=16)
-    parser.add_argument('--algorithm', default='medic')
+    parser.add_argument('--algorithm', default='arith')
     parser.add_argument('--task-d', type=int, default=3)
     parser.add_argument('--task-c', type=int, default=3)
     parser.add_argument('--task-per-step', nargs='+', type=int, default=[3, 3, 3])
     parser.add_argument('--weight-per-step', nargs='+', type=float, default=[1.5, 1, 0.5], help='arith only')
     parser.add_argument('--selection-mode', default='random')  # random, hard
+    parser.add_argument('--arith-antithetic', action='store_true', help = 'Alternate domain order by epoch (π on even, π_rev on odd). Mirror step schedules accordingly.')
 
     parser.add_argument('--net-name', default='resnet50')
     parser.add_argument('--optimize-method', default="SGD")
@@ -84,6 +85,7 @@ def get_args():
 
 
 args = get_args()
+
 
 # It can be used to replace the following code, but the editor may take it as an error.
 # locals().update(vars(args))
@@ -120,6 +122,8 @@ save_name = args.save_name
 save_later = args.save_later
 save_best_test = args.save_best_test
 num_epoch_before = args.num_epoch_before
+
+arith_antithetic = args.arith_antithetic
 crossval = True
 
 if dataset == 'PACS':

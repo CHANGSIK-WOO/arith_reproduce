@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=officeh_full
+#SBATCH --job-name=vlcs_reproduce
 #SBATCH --nodes=1
 #SBATCH --gres=gpu:1
 #SBATCH -p batch
@@ -21,29 +21,29 @@ GPU_NUM=0
 SEEDS=(42)
 
 SAVE_DIR="/data/changsik/arith/save"
-DATASET="OfficeHome"
-BATCH_SIZE=16
-NUM_EPOCH=6000
-EVAL_STEP=300
-LR=2e-4
+DATASET="VLCS"
+BATCH_SIZE=12 # 32
+NUM_EPOCH=2000 # 5000
+EVAL_STEP=500
+LR=5e-5
+#LR=6e-6 # 5e-5
 META_LR=1e-2
 
-KNOWN_CLASSES="Alarm_Clock Backpack Batteries Bed Bike Bottle Bucket Calculator Calendar Candles Chair Clipboards Computer Couch Curtains Desk_Lamp Drill Eraser Exit_Sign Fan File_Cabinet Flipflops Flowers Folder Fork Glasses Hammer Helmet Kettle Keyboard Knives Lamp_Shade Laptop Marker Monitor Mop Mouse Mug Notebook Oven Pan Paper_Clip Pen Pencil Postit_Notes Printer Push_Pin Radio Refrigerator Ruler Scissors Screwdriver Shelf Sink Sneakers Soda Speaker Spoon TV Table Telephone ToothBrush Toys Trash_Can Webcam"
-
-OFFICEH_DOMAINS=("Art" "Clipart" "Product" "RealWorld")
+KNOWN_CLASSES="bird  car  chair  dog  person"
+VLCS_DOMAINS=("Caltech101" "VOC2007" "SUN09" "LABELME")
 
 # ============================================
-# OfficeHome 학습
+# VLCS 학습
 # ============================================
 echo "========================================"
-echo "Starting OfficeHome Training"
+echo "Starting VLCS Training"
 echo "========================================"
 
-for TARGET in "${OFFICEH_DOMAINS[@]}"
+for TARGET in "${VLCS_DOMAINS[@]}"
 do
     # Source domain 생성 (target 제외)
     SOURCE_DOMAINS=()
-    for DOMAIN in "${OFFICEH_DOMAINS[@]}"
+    for DOMAIN in "${VLCS_DOMAINS[@]}"
     do
         if [ "$DOMAIN" != "$TARGET" ]; then
             SOURCE_DOMAINS+=("$DOMAIN")
@@ -53,7 +53,7 @@ do
 
     for SEED in "${SEEDS[@]}"
     do
-        SAVE_NAME="officeh_${TARGET}_seed${SEED}"
+        SAVE_NAME="vlcs_${TARGET}_seed${SEED}_reproduce"
 
         echo ""
         echo "========================================"
@@ -62,7 +62,7 @@ do
         echo "Target: ${TARGET}"
         echo "========================================"
 
-        python main.py \
+        python main_reproduce.py \
             --dataset ${DATASET} \
             --source-domain ${SOURCE_DOMAIN_STR} \
             --target-domain ${TARGET} \
@@ -78,24 +78,24 @@ do
             --save-name ${SAVE_NAME} \
             --save-later
 
-        echo "✓ Training Completed: ${SAVE_NAME}"
+        echo "✓ Training Completed: ${SAVE_NAME}_reproduce"
         echo ""
     done
 done
 
 # ============================================
-# OfficeHome 평가
+# VLCS 평가
 # ============================================
 echo ""
 echo "========================================"
-echo "Starting OfficeHome Evaluation"
+echo "Starting VLCS Evaluation"
 echo "========================================"
 
-for TARGET in "${OFFICEH_DOMAINS[@]}"
+for TARGET in "${VLCS_DOMAINS[@]}"
 do
     for SEED in "${SEEDS[@]}"
     do
-        SAVE_NAME="officeh_${TARGET}_seed${SEED}"
+        SAVE_NAME="vlcs_${TARGET}_seed${SEED}_reproduce"
 
         echo ""
         echo "========================================"
@@ -112,14 +112,14 @@ do
             --save-name ${SAVE_NAME} \
             --gpu ${GPU_NUM}
 
-        echo "✓ Evaluation Completed: ${SAVE_NAME}"
+        echo "✓ Evaluation Completed: ${SAVE_NAME}_reproduce"
         echo ""
     done
 done
 
 echo ""
 echo "========================================"
-echo "OfficeHome All Experiments Completed!"
+echo "VLCS All Experiments Completed!"
 echo "========================================"
 
 
